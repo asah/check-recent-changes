@@ -184,29 +184,29 @@ def build_unrelated_changes(repo_dir: Path) -> dict:
 # ─── Scenario 4: Dependency version bump ──────────────────────────────
 
 def build_dependency_bump(repo_dir: Path) -> dict:
-    """requirements.txt bump from requests 2.28.0 to 2.31.0 breaks an import."""
+    """requirements.txt bump from dataproc 1.2.0 to 2.0.0 breaks an import."""
     api_client_py = repo_dir / "api_client.py"
     api_client_py.write_text(textwrap.dedent("""\
-        from requests.auth import HTTPBasicAuth
+        from dataproc.auth import TokenAuth
 
-        def make_request(url, user, password):
-            auth = HTTPBasicAuth(user, password)
+        def make_request(url, token):
+            auth = TokenAuth(token)
             return {"url": url, "auth": auth}
     """))
 
     req_txt = repo_dir / "requirements.txt"
-    req_txt.write_text("requests==2.28.0\nflask==2.3.0\n")
+    req_txt.write_text("dataproc==1.2.0\nflask==2.3.0\n")
 
-    _commit(repo_dir, "Initial: API client with requests 2.28.0")
+    _commit(repo_dir, "Initial: API client with dataproc 1.2.0")
 
-    req_txt.write_text("requests==2.31.0\nflask==2.3.0\n")
-    hash2 = _commit(repo_dir, "Bump requests to 2.31.0")
+    req_txt.write_text("dataproc==2.0.0\nflask==2.3.0\n")
+    hash2 = _commit(repo_dir, "Bump dataproc to 2.0.0")
 
     return {
         "breaking_commit": hash2,
         "breaking_file": "requirements.txt",
         "error_message": (
-            "ImportError: cannot import name 'HTTPBasicAuth' from 'requests.auth'. "
+            "ImportError: cannot import name 'TokenAuth' from 'dataproc.auth'. "
             "This broke after the latest deployment. "
             "Traceback in api_client.py line 1."
         ),
